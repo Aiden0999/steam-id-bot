@@ -33,7 +33,7 @@ client.on("ready", evt => {
   const { username, id } = client.user;
   logger.info(`Logged in as: ${username} (${id})`);
   // client.user.setActivity(`Serving ${client.guilds.size} servers`);
-  client.user.setActivity(`Looking for steam ID's`);
+  client.user.setActivity(`Aiden#0999`);
 });
 
 
@@ -61,13 +61,6 @@ client.on('guildCreate', guild => {
   // message.channel.send("DM me your steam profile URL and I will give you your steam ID");
 });
 
-client.on("guildDelete", guild => {
-  const { id, name, region } = guild;
-  logger.info(`Guild ${name} removed me with ID: ${id}`);
-  const totalGuilds = client.guilds.size;
-  logger.info(`Total guilds: ${totalGuilds}`);
-});
-
 client.on("message", async message => {
 
   switch(message.channel.type) {
@@ -84,16 +77,31 @@ client.on("message", async message => {
           const doc = new DOMParser().parseFromString(text);
           const ele = doc.documentElement.getElementsByTagName("steamID64");
           const steamID = ele.item(0).firstChild.nodeValue;
-          message.channel.send(`Your steam id: ${steamID}`);
+          message.channel.send(`${steamID}`);
         } catch (error) {
           console.log(error);
           message.channel.send("An error occurred retrieving your steam id");
         }
       }
   }
-
+  
+  if (message.content.includes("https://steamcommunity.com/id") && !message.content.includes("your_profile_name")) {
+    const url = message.content.concat("?xml=1");
+    try {
+      const resp = await fetch(url);
+      const text = await resp.text();
+      const doc = new DOMParser().parseFromString(text);
+      const ele = doc.documentElement.getElementsByTagName("steamID64");
+      const steamID = ele.item(0).firstChild.nodeValue;
+      message.channel.send(`${steamID}`);
+    } catch (error) {
+      console.log(error);
+      message.channel.send("An error occurred retrieving your steam id");
+    }
+  }
+  
   if (message.isMentioned(client.user)) {
-    message.channel.send('You must DM me your steam profile URL to receive your steam id');
+    message.channel.send('You can either DM or drop a link inside of the chat.');
   }
 
 });
